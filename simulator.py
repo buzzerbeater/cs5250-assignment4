@@ -44,15 +44,15 @@ def FCFS_scheduling(process_list):
 #Output_1 : Schedule list contains pairs of (time_stamp, proccess_id) indicating the time switching to that proccess_id
 #Output_2 : Average Waiting Time
 def RR_scheduling(process_list, time_quantum):
+    length = len(process_list)
     schedule = []
     process_queue = []
     current_time = 0
     waiting_time = 0
-    mylist = process_list.copy()
     process_queue = []
-    process_queue.append(mylist.pop(0))
+    process_queue.append(process_list.pop(0))
     
-    while (len(process_queue) > 0 or len(mylist) >0 ):
+    while (len(process_queue) > 0 or len(process_list) >0 ):
 
         process = process_queue.pop(0)
         schedule.append((current_time,process.id))
@@ -64,54 +64,53 @@ def RR_scheduling(process_list, time_quantum):
             process.burst_time = process.burst_time - time_quantum
             current_time = current_time + time_quantum
             process.arrive_time = current_time
-            while(len(mylist) >0 and mylist[0].arrive_time <= current_time):
-                process_queue.append(mylist.pop(0))
+            while(len(process_list) >0 and process_list[0].arrive_time <= current_time):
+                process_queue.append(process_list.pop(0))
             process_queue.append(process)
 
-        if(len(mylist) >0 and len(process_queue) == 0):
-            process_queue.append(mylist.pop(0))
+        if(len(process_list) >0 and len(process_queue) == 0):
+            process_queue.append(process_list.pop(0))
             current_time = process_queue[0].arrive_time
 
-    average_waiting_time = waiting_time/float(len(process_list))
+    average_waiting_time = waiting_time/float(length)
 
     return schedule, average_waiting_time
 
 def SRTF_scheduling(process_list):
+    length = len(process_list)
     process_queue = Q.PriorityQueue()
     schedule = []
     current_time = 0
     waiting_time = 0
-    mylist=[]
-    mylist = process_list[:]
-    print(process_list)
-    process_queue.put(mylist.pop(0))
+    #print(process_list)
+    process_queue.put(process_list.pop(0))
 
-    #while (not process_queue.empty() or len(mylist) >0):
-    while (len(mylist) >0 or (not process_queue.empty())):
+    #while (not process_queue.empty() or len(process_list) >0):
+    while (len(process_list) >0 or (not process_queue.empty())):
         process = process_queue.get()
         schedule.append((current_time,process.id))
         waiting_time = waiting_time + (current_time - process.arrive_time)
-        print (process)
+        #print (process)
         #print("\n")
-        if (len(mylist) ==0 ):
+        if (len(process_list) ==0 ):
             current_time = current_time + process.burst_time
-        elif (process.burst_time + current_time <= mylist[0].arrive_time):
+        elif (process.burst_time + current_time <= process_list[0].arrive_time):
             current_time = current_time + process.burst_time
-            #process_queue.put(mylist.pop(0))
+            #process_queue.put(process_list.pop(0))
         else:
-            process.burst_time = process.burst_time - (mylist[0].arrive_time - current_time)
-            current_time = mylist[0].arrive_time
+            process.burst_time = process.burst_time - (process_list[0].arrive_time - current_time)
+            current_time = process_list[0].arrive_time
             process.arrive_time = current_time
             process_queue.put(process)
-        while(len(mylist) >0 and mylist[0].arrive_time <= current_time):
-                process_queue.put(mylist.pop(0))
+        while(len(process_list) >0 and process_list[0].arrive_time <= current_time):
+                process_queue.put(process_list.pop(0))
 
-        if(len(mylist) >0 and process_queue.empty()):
-            temp = mylist.pop(0)
+        if(len(process_list) >0 and process_queue.empty()):
+            temp = process_list.pop(0)
             process_queue.put(temp)
             current_time = temp.arrive_time
 
-    average_waiting_time = waiting_time/float(len(process_list))
+    average_waiting_time = waiting_time/float(length)
     return schedule, average_waiting_time
 
 def SJF_scheduling(process_list, alpha):
@@ -150,6 +149,7 @@ def main(argv):
     print ("simulating SRTF ----")
     SRTF_schedule, SRTF_avg_waiting_time =  SRTF_scheduling(process_list)
     write_output('SRTF.txt', SRTF_schedule, SRTF_avg_waiting_time )
+    process_list = read_input()
     print ("simulating SJF ----")
     SJF_schedule, SJF_avg_waiting_time =  SJF_scheduling(process_list, alpha = 0.5)
     write_output('SJF.txt', SJF_schedule, SJF_avg_waiting_time )
