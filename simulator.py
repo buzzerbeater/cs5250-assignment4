@@ -10,6 +10,7 @@ Output files:
     SJF.txt
 '''
 import sys
+import queue as Q
 
 input_file = 'input.txt'
 
@@ -22,6 +23,8 @@ class Process:
     #for printing purpose
     def __repr__(self):
         return ('[id %d : arrival_time %d,  burst_time %d]'%(self.id, self.arrive_time, self.burst_time))
+    def __lt__(self, other):
+        return (self.burst_time < other.burst_time)
 
 def FCFS_scheduling(process_list):
     #store the (switching time, proccess_id) pair
@@ -48,7 +51,7 @@ def RR_scheduling(process_list, time_quantum):
     mylist = process_list.copy()
     process_queue = []
     process_queue.append(mylist.pop(0))
-
+    
     while (len(process_queue) > 0 or len(mylist) >0 ):
 
         process = process_queue.pop(0)
@@ -70,10 +73,46 @@ def RR_scheduling(process_list, time_quantum):
             current_time = process_queue[0].arrive_time
 
     average_waiting_time = waiting_time/float(len(process_list))
+
     return schedule, average_waiting_time
- 
+
 def SRTF_scheduling(process_list):
-    return (["to be completed, scheduling process_list on SRTF, using process.burst_time to calculate the remaining time of the current process "], 0.0)
+    process_queue = Q.PriorityQueue()
+    schedule = []
+    current_time = 0
+    waiting_time = 0
+    mylist=[]
+    mylist = process_list[:]
+    print(process_list)
+    process_queue.put(mylist.pop(0))
+
+    #while (not process_queue.empty() or len(mylist) >0):
+    while (len(mylist) >0 or (not process_queue.empty())):
+        process = process_queue.get()
+        schedule.append((current_time,process.id))
+        waiting_time = waiting_time + (current_time - process.arrive_time)
+        print (process)
+        #print("\n")
+        if (len(mylist) ==0 ):
+            current_time = current_time + process.burst_time
+        elif (process.burst_time + current_time <= mylist[0].arrive_time):
+            current_time = current_time + process.burst_time
+            #process_queue.put(mylist.pop(0))
+        else:
+            process.burst_time = process.burst_time - (mylist[0].arrive_time - current_time)
+            current_time = mylist[0].arrive_time
+            process.arrive_time = current_time
+            process_queue.put(process)
+        while(len(mylist) >0 and mylist[0].arrive_time <= current_time):
+                process_queue.put(mylist.pop(0))
+
+        if(len(mylist) >0 and process_queue.empty()):
+            temp = mylist.pop(0)
+            process_queue.put(temp)
+            current_time = temp.arrive_time
+
+    average_waiting_time = waiting_time/float(len(process_list))
+    return schedule, average_waiting_time
 
 def SJF_scheduling(process_list, alpha):
     return (["to be completed, scheduling SJF without using information from process.burst_time"],0.0)
@@ -107,6 +146,7 @@ def main(argv):
     print ("simulating RR ----")
     RR_schedule, RR_avg_waiting_time =  RR_scheduling(process_list,time_quantum = 2)
     write_output('RR.txt', RR_schedule, RR_avg_waiting_time )
+    process_list = read_input()
     print ("simulating SRTF ----")
     SRTF_schedule, SRTF_avg_waiting_time =  SRTF_scheduling(process_list)
     write_output('SRTF.txt', SRTF_schedule, SRTF_avg_waiting_time )
