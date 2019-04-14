@@ -53,13 +53,11 @@ def RR_scheduling(process_list, time_quantum):
     process_queue.append(process_list.pop(0))
     
     while (len(process_queue) > 0 or len(process_list) >0 ):
-
         process = process_queue.pop(0)
         schedule.append((current_time,process.id))
         waiting_time = waiting_time + (current_time - process.arrive_time)
         if (process.burst_time <= time_quantum):
-            current_time = current_time + process.burst_time
-            
+            current_time = current_time + process.burst_time          
         else:
             process.burst_time = process.burst_time - time_quantum
             current_time = current_time + time_quantum
@@ -82,21 +80,21 @@ def SRTF_scheduling(process_list):
     schedule = []
     current_time = 0
     waiting_time = 0
-    #print(process_list)
     process_queue.put(process_list.pop(0))
 
-    #while (not process_queue.empty() or len(process_list) >0):
     while (len(process_list) >0 or (not process_queue.empty())):
         process = process_queue.get()
-        schedule.append((current_time,process.id))
+        if(len(schedule) == 0):
+            schedule.append((current_time,process.id))
+        if(len(schedule)>0):
+            if(not schedule[len(schedule)-1][1] == process.id):
+                schedule.append((current_time,process.id))
+        #schedule.append((current_time,process.id))
         waiting_time = waiting_time + (current_time - process.arrive_time)
-        #print (process)
-        #print("\n")
         if (len(process_list) ==0 ):
             current_time = current_time + process.burst_time
         elif (process.burst_time + current_time <= process_list[0].arrive_time):
             current_time = current_time + process.burst_time
-            #process_queue.put(process_list.pop(0))
         else:
             process.burst_time = process.burst_time - (process_list[0].arrive_time - current_time)
             current_time = process_list[0].arrive_time
@@ -114,6 +112,9 @@ def SRTF_scheduling(process_list):
     return schedule, average_waiting_time
 
 def SJF_scheduling(process_list, alpha):
+    length = len(process_list)
+
+
     return (["to be completed, scheduling SJF without using information from process.burst_time"],0.0)
 
 
