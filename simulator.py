@@ -58,7 +58,9 @@ def RR_scheduling(process_list, time_quantum):
         schedule.append((current_time,process.id))
         waiting_time = waiting_time + (current_time - process.arrive_time)
         if (process.burst_time <= time_quantum):
-            current_time = current_time + process.burst_time          
+            current_time = current_time + process.burst_time
+            while(len(my_process_list) >0 and my_process_list[0].arrive_time <= current_time):
+                process_queue.append(my_process_list.pop(0))         
         else:
             process.burst_time = process.burst_time - time_quantum
             current_time = current_time + time_quantum
@@ -72,7 +74,6 @@ def RR_scheduling(process_list, time_quantum):
             current_time = process_queue[0].arrive_time
 
     average_waiting_time = waiting_time/float(length)
-
     return schedule, average_waiting_time
 
 def SRTF_scheduling(process_list):
