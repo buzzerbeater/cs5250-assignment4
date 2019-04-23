@@ -111,11 +111,60 @@ def SRTF_scheduling(process_list):
     average_waiting_time = waiting_time/float(length)
     return schedule, average_waiting_time
 
+class MyProcess(Process):
+    last_scheduled_time = 0
+    estimated_burst_time = 0
+    def __init__(self, id, arrive_time, burst_time):
+        super().__init__(id, arrive_time, burst_time)
+    #for printing purpose
+    def __repr__(self):
+        super().__repr__
+    def __lt__(self, other):
+        return (self.estimated_burst_time < other.estimated_burst_time)
+
 def SJF_scheduling(process_list, alpha):
+    ext_process_list = [MyProcess(p.id, p.arrive_time, p.burst_time) for p in process_list]
+
+    process_history = {}
     length = len(process_list)
+    process_queue = Q.PriorityQueue()
+    schedule = []
+    current_time = 0
+    waiting_time = 0
 
+    process = ext_process_list.pop(0)
+    process_queue.put(process)
+    process_history[process.id] = (process.burst_time, 5)
 
-    return (["to be completed, scheduling SJF without using information from process.burst_time"],0.0)
+    while(len(ext_process_list) > 0 or (not process_queue.empty())):
+        process = process_queue.get()
+        schedule.append((current_time,process.id))
+        waiting_time = waiting_time + (current_time - process.arrive_time)
+        current_time = current_time + process.burst_time
+        while(len(ext_process_list) >0 and ext_process_list[0].arrive_time <= current_time):
+            next_process = ext_process_list.pop(0)
+            if(process_history.get(next_process.id) == None):
+                guess = 5
+            else:
+                last_burst, last_guess = process_history.get(next_process.id)
+                guess = alpha * last_burst + (1 - alpha) * last_guess
+                next_process.estimated_burst_time = guess
+            process_history[next_process.id] = (next_process.burst_time, guess)
+            process_queue.put(next_process)
+        if(len(ext_process_list) >0 and process_queue.empty()):
+            next_process = ext_process_list.pop(0)
+            if(process_history.get(next_process.id) == None):
+                guess = 5
+            else:
+                last_burst, last_guess = process_history.get(next_process.id)
+                guess = alpha * last_burst + (1 - alpha) * last_guess
+                next_process.estimated_burst_time = guess
+            process_history[next_process.id] = (next_process.burst_time, guess)
+            process_queue.put(next_process)
+            current_time = next_process.arrive_time
+
+    average_waiting_time = waiting_time/float(length)
+    return schedule, average_waiting_time
 
 
 def read_input():
@@ -157,4 +206,3 @@ def main(argv):
 
 if __name__ == '__main__':
     main(sys.argv[1:])
-
