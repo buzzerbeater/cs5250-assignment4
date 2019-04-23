@@ -123,7 +123,7 @@ class MyProcess(Process):
         return (self.estimated_burst_time < other.estimated_burst_time)
 
 def SJF_scheduling(process_list, alpha):
-    ext_process_list = [MyProcess(p.id, p.arrive_time, p.burst_time) for p in process_list]
+    my_process_list = [MyProcess(p.id, p.arrive_time, p.burst_time) for p in process_list]
 
     process_history = {}
     length = len(process_list)
@@ -132,17 +132,17 @@ def SJF_scheduling(process_list, alpha):
     current_time = 0
     waiting_time = 0
 
-    process = ext_process_list.pop(0)
+    process = my_process_list.pop(0)
     process_queue.put(process)
     process_history[process.id] = (process.burst_time, 5)
 
-    while(len(ext_process_list) > 0 or (not process_queue.empty())):
+    while(len(my_process_list) > 0 or (not process_queue.empty())):
         process = process_queue.get()
         schedule.append((current_time,process.id))
         waiting_time = waiting_time + (current_time - process.arrive_time)
         current_time = current_time + process.burst_time
-        while(len(ext_process_list) >0 and ext_process_list[0].arrive_time <= current_time):
-            next_process = ext_process_list.pop(0)
+        while(len(my_process_list) >0 and my_process_list[0].arrive_time <= current_time):
+            next_process = my_process_list.pop(0)
             if(process_history.get(next_process.id) == None):
                 guess = 5
             else:
@@ -151,8 +151,8 @@ def SJF_scheduling(process_list, alpha):
                 next_process.estimated_burst_time = guess
             process_history[next_process.id] = (next_process.burst_time, guess)
             process_queue.put(next_process)
-        if(len(ext_process_list) >0 and process_queue.empty()):
-            next_process = ext_process_list.pop(0)
+        if(len(my_process_list) >0 and process_queue.empty()):
+            next_process = my_process_list.pop(0)
             if(process_history.get(next_process.id) == None):
                 guess = 5
             else:
